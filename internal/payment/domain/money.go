@@ -3,25 +3,25 @@ package domain
 import (
 	"errors"
 	"fmt"
+	"strings"
 )
 
 type Money struct {
 	Amount   int64  // В копейках, центах
 	Currency string // RUB, USD
-	Scale    uint8  // Кол-во знаков после запятой
 }
 
-var scaleFactors = [9]int64{1, 10, 100, 1000, 10000, 100000, 1000000, 10000000, 100000000}
-
-func NewMoney(amount int64, currency string, scale uint8) (Money, error) {
-	if scale > 8 {
-		return Money{}, errors.New("Scale is too large")
-	}
+func NewMoney(amount int64, currency string) (Money, error) {
+	currency = strings.ToUpper(strings.TrimSpace(currency))
 	if currency == "" {
-		return Money{}, errors.New("Currency is required")
+		return Money{}, errors.New("currency is required")
 	}
 
-	return Money{amount, currency, scale}, nil
+	if err := validateCurrency(currency); err != nil {
+		return Money{}, err
+	}
+
+	return Money{Amount: amount, Currency: currency}, nil
 }
 
 func (m Money) String() string {
@@ -33,11 +33,43 @@ func (m Money) String() string {
 		amount = -amount
 	}
 
-	scaleFactor := scaleFactors[m.Scale]
+	intPart := amount / 100      // Целые рубли / доллары
+	fractionPart := amount % 100 // Копейки / центы
 
-	intPart := amount / scaleFactor
-	fractionPart := amount % 10
+	return fmt.Sprintf("%s%d.%02d %s",
+		sign, intPart, fractionPart, m.Currency)
+}
 
-	return fmt.Sprintf("%s%d.%0*d %s",
-		sign, intPart, m.Scale, fractionPart, m.Currency)
+func (m Money) GreaterThan(other Money) bool {
+	if m.Currency != other.Currency {
+		return false
+	}
+	return m.Amount > other.Amount
+}
+
+func (m Money) Add(other Money) (Money, error) {
+	if m.Currency != other.Currency {
+		return Money{}, errors.New("cannot add different currencies")
+	}
+
+	return Money{Amount: m.Amount + other.Amount, Currency: m.Currency}, nil
+}
+
+func (m Money) Equal(other Money) bool {
+	return m.Currency == other.Currency &&
+		m.Amount == other.Amount
+}
+
+func validateCurrency(currency string) error {
+	if len(currency) < 3 {
+		return fmt.Errorf("invalid currency code length: %q", currency)
+	}
+
+	for _, r := range currency {
+		if r < 'A' || r > 'Z' {
+			return fmt.Errorf("currency should contain latin characters: %q", currency)
+		}
+	}
+
+	return nil
 }
