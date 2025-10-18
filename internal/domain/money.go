@@ -1,13 +1,12 @@
 package domain
 
 import (
-	"errors"
 	"fmt"
 )
 
 type Money struct {
 	Amount   int64        // В копейках, центах
-	Currency CurrencyCode // RUB, USD
+	Currency CurrencyCode // "RUB", "USD"
 }
 
 func NewMoney(amount int64, currency string) (Money, error) {
@@ -43,10 +42,18 @@ func (m Money) GreaterThan(other Money) bool {
 
 func (m Money) Add(other Money) (Money, error) {
 	if m.Currency != other.Currency {
-		return Money{}, errors.New("cannot add different currencies")
+		return Money{}, ErrDifferentCurrencies
 	}
 
 	return Money{Amount: m.Amount + other.Amount, Currency: m.Currency}, nil
+}
+
+func (m Money) Sub(other Money) (Money, error) {
+	if m.Currency != other.Currency {
+		return Money{}, ErrDifferentCurrencies
+	}
+
+	return Money{Amount: m.Amount - other.Amount, Currency: m.Currency}, nil
 }
 
 func (m Money) Equal(other Money) bool {

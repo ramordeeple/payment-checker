@@ -1,7 +1,6 @@
 package domain
 
 import (
-	"fmt"
 	"strings"
 )
 
@@ -17,22 +16,22 @@ func (c CurrencyCode) Valid() bool {
 
 func NormalizeCurrency(currency string) (CurrencyCode, error) {
 	c := strings.ToUpper(strings.TrimSpace(currency))
-	if err := validateCurrency(c); err != nil {
-		return "", err
+	if !validateCurrency(c) {
+		return "", ErrInvalidCurrencyCode
 	}
 	return CurrencyCode(c), nil
 }
 
-func validateCurrency(currency string) error {
+func validateCurrency(currency string) bool {
 	if len(currency) < 3 {
-		return fmt.Errorf("invalid currency code length: %q", currency)
+		return false
 	}
 
 	for _, r := range currency {
 		if r < 'A' || r > 'Z' {
-			return fmt.Errorf("currency should contain latin characters: %q", currency)
+			return false
 		}
 	}
 
-	return nil
+	return true
 }

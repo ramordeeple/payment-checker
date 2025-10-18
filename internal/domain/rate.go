@@ -1,7 +1,7 @@
 package domain
 
 import (
-	"errors"
+	"fmt"
 	"time"
 )
 
@@ -17,15 +17,15 @@ type Rate struct {
 func NewRate(date time.Time, currency string, nominal int32, valueScaled int64) (Rate, error) {
 	cc, err := NormalizeCurrency(currency)
 	if err != nil {
-		return Rate{}, err
+		return Rate{}, ErrInvalidCurrencyCode
 	}
 
 	if nominal <= 0 {
-		return Rate{}, errors.New("nominal must be greater than 0")
+		return Rate{}, ErrInvalidNominal
 	}
 
 	if valueScaled <= 0 {
-		return Rate{}, errors.New("valueScaled must be greater or equal 0")
+		return Rate{}, ErrInvalidRateValue
 	}
 
 	return Rate{
@@ -34,4 +34,9 @@ func NewRate(date time.Time, currency string, nominal int32, valueScaled int64) 
 		Nominal:     nominal,
 		ValueScaled: valueScaled,
 	}, nil
+}
+
+// Для удобной совместимости с ЦБ xml
+func (r Rate) FormatValueScaled() string {
+	return fmt.Sprintf("%d,%04d", r.ValueScaled/RateScale, r.ValueScaled%RateScale)
 }
