@@ -3,25 +3,19 @@ package domain
 import (
 	"errors"
 	"fmt"
-	"strings"
 )
 
 type Money struct {
-	Amount   int64  // В копейках, центах
-	Currency string // RUB, USD
+	Amount   int64        // В копейках, центах
+	Currency CurrencyCode // RUB, USD
 }
 
 func NewMoney(amount int64, currency string) (Money, error) {
-	currency = strings.ToUpper(strings.TrimSpace(currency))
-	if currency == "" {
-		return Money{}, errors.New("currency is required")
-	}
-
-	if err := validateCurrency(currency); err != nil {
+	cc, err := NormalizeCurrency(currency)
+	if err != nil {
 		return Money{}, err
 	}
-
-	return Money{Amount: amount, Currency: currency}, nil
+	return Money{Amount: amount, Currency: cc}, nil
 }
 
 func (m Money) String() string {
@@ -58,18 +52,4 @@ func (m Money) Add(other Money) (Money, error) {
 func (m Money) Equal(other Money) bool {
 	return m.Currency == other.Currency &&
 		m.Amount == other.Amount
-}
-
-func validateCurrency(currency string) error {
-	if len(currency) < 3 {
-		return fmt.Errorf("invalid currency code length: %q", currency)
-	}
-
-	for _, r := range currency {
-		if r < 'A' || r > 'Z' {
-			return fmt.Errorf("currency should contain latin characters: %q", currency)
-		}
-	}
-
-	return nil
 }
