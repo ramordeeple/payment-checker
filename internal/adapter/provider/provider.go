@@ -29,3 +29,8 @@ func (p *Provider) GetRate(date time.Time, currency domain.CurrencyCode) (domain
 
 	return domain.Rate{}, domain.ErrRateNotFound
 }
+
+func (p *Provider) HasCurrency(currency domain.CurrencyCode) bool {
+	_, ok := p.rates[currency]
+	return ok
+}

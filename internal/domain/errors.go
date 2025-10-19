@@ -9,4 +9,6 @@ var (
 	ErrRateNotFound        = errors.New("rate not found")
 	ErrDifferentCurrencies = errors.New("cannot provide an operation with different currencies")
 	ErrRateUnavailable     = errors.New("foreign exchange rate is unavailable")
+	ErrCurrencyNotFound    = errors.New("currency not found")
+	ErrInvalidDate         = errors.New("invalid date")
 )
