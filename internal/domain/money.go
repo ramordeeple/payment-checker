@@ -9,12 +9,8 @@ type Money struct {
 	Currency CurrencyCode // "RUB", "USD"
 }
 
-func NewMoney(amount int64, currency string) (Money, error) {
-	cc, err := NormalizeCurrency(currency)
-	if err != nil {
-		return Money{}, err
-	}
-	return Money{Amount: amount, Currency: cc}, nil
+func NewMoney(amount int64, currency CurrencyCode) (Money, error) {
+	return Money{Amount: amount, Currency: currency}, nil
 }
 
 func (m Money) String() string {

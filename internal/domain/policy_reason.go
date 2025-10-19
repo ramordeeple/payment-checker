@@ -7,7 +7,3 @@ const (
 	ReasonRateUnavailable ValidationReason = "RATE_UNAVAILABLE"
 	ReasonLimitExceeded   ValidationReason = "LIMIT_EXCEEDED"
 )
-
-func (vr ValidationReason) String() string {
-	return string(vr)
-}

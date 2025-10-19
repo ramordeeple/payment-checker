@@ -14,12 +14,7 @@ type Rate struct {
 	ValueScaled int64
 }
 
-func NewRate(date time.Time, currency string, nominal int32, valueScaled int64) (Rate, error) {
-	cc, err := NormalizeCurrency(currency)
-	if err != nil {
-		return Rate{}, ErrInvalidCurrencyCode
-	}
-
+func NewRate(date time.Time, currency CurrencyCode, nominal int32, valueScaled int64) (Rate, error) {
 	if nominal <= 0 {
 		return Rate{}, ErrInvalidNominal
 	}
@@ -30,7 +25,7 @@ func NewRate(date time.Time, currency string, nominal int32, valueScaled int64) 
 
 	return Rate{
 		Date:        date,
-		Currency:    cc,
+		Currency:    currency,
 		Nominal:     nominal,
 		ValueScaled: valueScaled,
 	}, nil
