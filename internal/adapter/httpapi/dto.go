@@ -1,4 +1,4 @@
-package http
+package httpapi
 
 // От фронтенда
 type ValidatePaymentRequest struct {
