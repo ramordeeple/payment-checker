@@ -11,22 +11,21 @@ type Provider struct {
 
 // Через map для удобного добавления новой валюты в дальнейшем
 func NewProvider() *Provider {
+	date := time.Now()
 	return &Provider{
 		rates: map[domain.CurrencyCode]domain.Rate{
-			domain.CurrencyRUB: {Currency: domain.CurrencyRUB, Nominal: 1, ValueScaled: domain.RateScale},
-			domain.CurrencyUSD: {Currency: domain.CurrencyRUB, Nominal: 1, ValueScaled: 75_1234},
-			domain.CurrencyEUR: {Currency: domain.CurrencyRUB, Nominal: 1, ValueScaled: 80_5678},
-			domain.CurrencyJPY: {Currency: domain.CurrencyRUB, Nominal: 1, ValueScaled: 50_1234},
+			domain.CurrencyRUB: {Date: date, Currency: domain.CurrencyRUB, Nominal: 1, ValueScaled: domain.RateScale},
+			domain.CurrencyUSD: {Date: date, Currency: domain.CurrencyRUB, Nominal: 1, ValueScaled: 75_1234},
+			domain.CurrencyEUR: {Date: date, Currency: domain.CurrencyRUB, Nominal: 1, ValueScaled: 80_5678},
+			domain.CurrencyJPY: {Date: date, Currency: domain.CurrencyRUB, Nominal: 1, ValueScaled: 50_1234},
 		},
 	}
 }
 
 func (p *Provider) GetRate(date time.Time, currency domain.CurrencyCode) (domain.Rate, error) {
-	rate, ok := p.rates[currency]
-	if !ok {
-		return domain.Rate{}, domain.ErrRateNotFound
+	if rate, ok := p.rates[currency]; ok {
+		return rate, nil
 	}
-	rate.Date = date
 
-	return rate, nil
+	return domain.Rate{}, domain.ErrRateNotFound
 }
