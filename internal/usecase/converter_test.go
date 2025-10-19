@@ -9,8 +9,8 @@ import (
 const (
 	rateValue   = 10_0000 // Условно 10.0000 RUB за 1 USD
 	amountUSD   = 123_00  // 123.00 USD
-	fxCurrency  = "USD"
-	currencyRUB = "RUB"
+	fxCurrency  = domain.CurrencyUSD
+	currencyRUB = domain.CurrencyRUB
 )
 
 func TestConverter_ToRUB(t *testing.T) {

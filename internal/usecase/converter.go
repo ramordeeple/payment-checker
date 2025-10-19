@@ -15,7 +15,7 @@ func NewConverter(fx port.FXRateProvider) *Converter {
 }
 
 func (c *Converter) ToRUB(m domain.Money, date time.Time) (domain.Money, error) {
-	if m.Currency == "RUB" {
+	if m.Currency == domain.CurrencyRUB {
 		return m, nil
 	}
 
@@ -26,5 +26,5 @@ func (c *Converter) ToRUB(m domain.Money, date time.Time) (domain.Money, error) 
 
 	rub := (m.Amount * r.ValueScaled) / (int64(r.Nominal) * domain.RateScale)
 
-	return domain.Money{Amount: rub, Currency: "RUB"}, nil
+	return domain.Money{Amount: rub, Currency: domain.CurrencyRUB}, nil
 }
