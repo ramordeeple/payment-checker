@@ -11,6 +11,6 @@ type ValidatePaymentRequest struct {
 // На фронтенд
 type ValidatePaymentResponse struct {
 	Allowed  bool   `json:"allowed"`
-	TotalRUB int64  `json:"totalRUB"`
+	TotalRUB int64  `json:"totalRUBInKopecks"`
 	Reason   string `json:"reason"`
 }
