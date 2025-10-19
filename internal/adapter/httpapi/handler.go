@@ -31,7 +31,7 @@ func (h *Handler) ValidatePayment(w http.ResponseWriter, r *http.Request) {
 	currency := domain.CurrencyCode(reqDTO.Currency)
 
 	if !h.provider.HasCurrency(currency) {
-		http.Error(w, domain.ErrCurrencyNotFound.Error(), http.StatusBadRequest)
+		http.Error(w, domain.ErrCurrencyNotFound.Error(), http.StatusNotFound)
 		return
 	}
 
