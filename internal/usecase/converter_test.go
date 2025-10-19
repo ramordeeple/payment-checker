@@ -3,7 +3,6 @@ package usecase
 import (
 	"payment-checker/internal/domain"
 	"testing"
-	"time"
 )
 
 const (
@@ -14,15 +13,7 @@ const (
 )
 
 func TestConverter_ToRUB(t *testing.T) {
-	date := time.Date(
-		2025,
-		3,
-		2,
-		0,
-		0,
-		0,
-		0,
-		time.UTC)
+	date := setupParallel(t)
 
 	rate, err := domain.NewRate(date, fxCurrency, 1, rateValue) // 10.0000 RUB за USD
 	must(t, err)
@@ -42,12 +33,5 @@ func TestConverter_ToRUB(t *testing.T) {
 
 	if got.Amount != expected {
 		t.Fatalf("got amount %d, expected %d", got.Amount, expected)
-	}
-}
-
-func must(t *testing.T, err error) {
-	t.Helper()
-	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
 	}
 }
