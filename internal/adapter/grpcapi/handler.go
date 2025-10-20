@@ -1,7 +1,6 @@
 package grpcapi
 
 import (
-	"context"
 	"payment-checker/internal/adapter/provider"
 	"payment-checker/internal/domain"
 	"payment-checker/internal/usecase"
@@ -22,7 +21,6 @@ func NewGRPCHandler(provider *provider.Provider, policy *usecase.Policy) *GRPCHa
 }
 
 func (h *GRPCHandler) ValidatePayment(
-	ctx context.Context,
 	req *ValidatePaymentRequest,
 ) (*ValidatePaymentResponse, error) {
 
