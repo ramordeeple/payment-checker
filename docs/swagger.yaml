@@ -1,0 +1,51 @@
+definitions:
+  httpapi.ValidatePaymentRequest:
+    properties:
+      amount:
+        type: integer
+      currency:
+        type: string
+      date:
+        type: string
+      provider:
+        type: string
+    type: object
+  httpapi.ValidatePaymentResponse:
+    properties:
+      allowed:
+        type: boolean
+      reason:
+        type: string
+      totalRUBInKopecks:
+        type: integer
+    type: object
+info:
+  contact: {}
+paths:
+  /validate:
+    post:
+      consumes:
+      - application/json
+      description: Validates a payment request with amount, currency, and date
+      parameters:
+      - description: Payment request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/httpapi.ValidatePaymentRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/httpapi.ValidatePaymentResponse'
+        "400":
+          description: Bad request
+          schema:
+            type: string
+      summary: Validate foreign payment
+      tags:
+      - payments
+swagger: "2.0"

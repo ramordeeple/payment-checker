@@ -7,14 +7,26 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	_ "payment-checker/docs"
 	"payment-checker/internal/app"
 	"time"
+
+	httpSwagger "github.com/swaggo/http-swagger"
 )
 
 func main() {
+	ctx, stop := signal.NotifyContext(
+		context.Background(),
+		os.Interrupt,
+	)
+	defer stop()
+
 	a := app.New()
 
+	http.Handle("/swagger/", httpSwagger.WrapHandler)
+
 	http.HandleFunc("/validate", a.Handler.ValidatePayment)
+
 	server := &http.Server{
 		Addr:    ":8080",
 		Handler: http.DefaultServeMux,
@@ -29,16 +41,10 @@ func main() {
 	}()
 
 	go func() {
-		if err := a.StartGRPC(); err != err {
+		if err := a.StartGRPC(); err != nil {
 			log.Fatalf("grpc server closed with error: %s\n", err)
 		}
 	}()
-
-	ctx, stop := signal.NotifyContext(
-		context.Background(),
-		os.Interrupt,
-	)
-	defer stop()
 
 	<-ctx.Done()
 

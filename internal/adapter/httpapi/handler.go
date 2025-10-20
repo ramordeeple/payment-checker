@@ -21,6 +21,16 @@ func NewHandler(p *provider.Provider, policy *usecase.Policy) *Handler {
 	}
 }
 
+// ValidatePayment godoc
+// @Summary Validate foreign payment
+// @Description Validates a payment request with amount, currency, and date
+// @Tags payments
+// @Accept json
+// @Produce json
+// @Param request body ValidatePaymentRequest true "Payment request"
+// @Success 200 {object} ValidatePaymentResponse
+// @Failure 400 {string} string "Bad request"
+// @Router /validate [post]
 func (h *Handler) ValidatePayment(w http.ResponseWriter, r *http.Request) {
 	var reqDTO ValidatePaymentRequest
 	if err := json.NewDecoder(r.Body).Decode(&reqDTO); err != nil {
