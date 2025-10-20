@@ -1,13 +1,20 @@
 package app
 
 import (
+	"fmt"
+	"net"
+	"payment-checker/internal/adapter/grpcapi"
 	"payment-checker/internal/adapter/httpapi"
 	"payment-checker/internal/adapter/provider"
 	"payment-checker/internal/usecase"
+
+	"google.golang.org/grpc"
 )
 
 type App struct {
-	Handler *httpapi.Handler
+	Provider *provider.Provider
+	Policy   *usecase.Policy
+	Handler  *httpapi.Handler
 }
 
 func New() *App {
@@ -20,4 +27,20 @@ func New() *App {
 	return &App{
 		Handler: handler,
 	}
+}
+
+func (a *App) StartGRPC() error {
+	addr := ":8090"
+	network := "tcp"
+
+	listen, err := net.Listen(network, addr)
+	if err != nil {
+		return err
+	}
+
+	s := grpc.NewServer()
+	grpcapi.RegisterPaymentCheckerServer(s, grpcapi.NewGRPCHandler(a.Provider, a.Policy))
+
+	fmt.Printf("Listening on port %w\n", addr)
+	return s.Serve(listen)
 }
