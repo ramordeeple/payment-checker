@@ -41,6 +41,6 @@ func (a *App) StartGRPC() error {
 	s := grpc.NewServer()
 	grpcapi.RegisterPaymentCheckerServer(s, grpcapi.NewGRPCHandler(a.Provider, a.Policy))
 
-	fmt.Printf("Listening on port %w\n", addr)
+	fmt.Printf("Listening gRPC on port %s\n", addr)
 	return s.Serve(listen)
 }
