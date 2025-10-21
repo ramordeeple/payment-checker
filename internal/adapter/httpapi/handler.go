@@ -3,20 +3,20 @@ package httpapi
 import (
 	"encoding/json"
 	"net/http"
-	"payment-checker/internal/adapter/provider"
 	"payment-checker/internal/domain"
+	"payment-checker/internal/port"
 	"payment-checker/internal/usecase"
 	"time"
 )
 
 type Handler struct {
-	provider *provider.Provider
+	provider port.FXRateProvider
 	policy   *usecase.Policy
 }
 
-func NewHandler(p *provider.Provider, policy *usecase.Policy) *Handler {
+func NewHandler(fx port.FXRateProvider, policy *usecase.Policy) *Handler {
 	return &Handler{
-		provider: p,
+		provider: fx,
 		policy:   policy,
 	}
 }
