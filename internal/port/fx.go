@@ -16,3 +16,8 @@ type CurrencyChecker interface {
 type RatesByDateProvider interface {
 	GetRatesByDate(date time.Time) ([]domain.Rate, error)
 }
+
+type FXRateProvider interface {
+	CurrencyChecker
+	RateByCurrency
+}

@@ -10,7 +10,6 @@ import (
 	"payment-checker/internal/adapter/grpcapi"
 	"payment-checker/internal/adapter/httpapi"
 	"payment-checker/internal/adapter/repository"
-	"payment-checker/internal/port"
 	"payment-checker/internal/usecase"
 	"time"
 
@@ -22,7 +21,7 @@ import (
 type App struct {
 	Policy   *usecase.Policy
 	Handler  *httpapi.Handler
-	Provider port.RateByCurrency
+	Provider *repository.RateRepo
 }
 
 func (a *App) StartHTTP(addr string) *http.Server {
@@ -87,13 +86,13 @@ func InitDB(driverName, dsn string) *App {
 	}
 
 	repo := repository.NewRateRepo(db)
-	var fx port.RateByCurrency = repo
-
 	converter := usecase.NewConverter(repo)
 	policy := usecase.NewPolicy(converter, usecase.MaxRubKopecks)
-	handler := httpapi.NewHandler(fx, policy)
+	handler := httpapi.NewHandler(repo, policy)
 
 	return &App{
-		Handler: handler,
+		Handler:  handler,
+		Policy:   policy,
+		Provider: repo,
 	}
 }

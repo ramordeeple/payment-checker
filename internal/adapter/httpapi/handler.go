@@ -2,6 +2,7 @@ package httpapi
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"payment-checker/internal/domain"
 	"payment-checker/internal/port"
@@ -10,12 +11,11 @@ import (
 )
 
 type Handler struct {
-	provider      port.RateByCurrency
-	policy        *usecase.Policy
-	currencyCheck port.CurrencyChecker
+	provider port.FXRateProvider
+	policy   *usecase.Policy
 }
 
-func NewHandler(fx port.RateByCurrency, policy *usecase.Policy) *Handler {
+func NewHandler(fx port.FXRateProvider, policy *usecase.Policy) *Handler {
 	return &Handler{
 		provider: fx,
 		policy:   policy,
@@ -33,6 +33,13 @@ func NewHandler(fx port.RateByCurrency, policy *usecase.Policy) *Handler {
 // @Failure 400 {string} string "Bad request"
 // @Router /validate [post]
 func (h *Handler) ValidatePayment(w http.ResponseWriter, r *http.Request) {
+	defer func() {
+		if r := recover(); r != nil {
+			fmt.Println("Recovered in ValidatePayment:", r)
+			http.Error(w, fmt.Sprintf("internal server error: %v", r), http.StatusInternalServerError)
+		}
+	}()
+
 	var reqDTO ValidatePaymentRequest
 	if err := json.NewDecoder(r.Body).Decode(&reqDTO); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
@@ -41,7 +48,7 @@ func (h *Handler) ValidatePayment(w http.ResponseWriter, r *http.Request) {
 
 	currency := domain.CurrencyCode(reqDTO.Currency)
 
-	if !h.currencyCheck.HasCurrency(currency) {
+	if !h.provider.HasCurrency(currency) {
 		http.Error(w, domain.ErrCurrencyNotFound.Error(), http.StatusNotFound)
 		return
 	}
