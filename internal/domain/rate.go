@@ -5,14 +5,14 @@ import (
 	"time"
 )
 
-const RateScale = int64(10_000) // Чтобы можно было 75.1234 хранить как целое число(751234) во избежания ошибок округления
-
 type Rate struct {
 	Date        time.Time
 	Currency    CurrencyCode
 	Nominal     int32
 	ValueScaled int64
 }
+
+const RateScale = int64(10_000) // Чтобы можно было 75.1234 хранить как целое число(751234) во избежания ошибок округления
 
 func NewRate(date time.Time, currency CurrencyCode, nominal int32, valueScaled int64) (Rate, error) {
 	if nominal <= 0 {
