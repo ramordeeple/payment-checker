@@ -1,0 +1,12 @@
+services:
+  db:
+    image: postgres:latest
+    command: ["postgres", "-c", "port=5433"]
+    environment:
+      POSTGRES_DB: payment_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 123
+    ports:
+      - "5433:5433"
+    volumes:
+      - ./migrations:/docker-entrypoint-initdb.d
