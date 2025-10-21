@@ -22,7 +22,7 @@ import (
 type App struct {
 	Policy   *usecase.Policy
 	Handler  *httpapi.Handler
-	Provider *port.RateByCurrency
+	Provider port.RateByCurrency
 }
 
 func (a *App) StartHTTP(addr string) *http.Server {
