@@ -1,17 +1,21 @@
-@provider = "provider"
-//amount в копейках/центах
-@amount = 10000
-@currency = "USD"
-
-//вручную т.к. с фронтенда
-@date = "2025-10-10"
-
-POST localhost:8080/validate
+POST http://localhost:8080/validate
 Content-Type: application/json
 
 {
-  "provider": {{provider}},
-  "amount": {{amount}},
-  "currency": {{currency}},
-  "date": {{date}}
+  "provider": "provider",
+  "amount": 751234,
+  "currency": "RUB",
+  "date": "2025-10-10"
+}
+
+###
+
+POST http://localhost:8080/validate
+Content-Type: application/json
+
+{
+"provider": "provider",
+"amount": 10000,
+"currency": "USD",
+"date": "2025-10-10"
 }
