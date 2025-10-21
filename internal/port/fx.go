@@ -7,4 +7,5 @@ import (
 
 type FXRateProvider interface {
 	GetRate(date time.Time, currency domain.CurrencyCode) (domain.Rate, error)
+	HasCurrency(currency domain.CurrencyCode) bool
 }
