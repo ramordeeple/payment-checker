@@ -30,20 +30,20 @@ func (a *App) StartHTTP(addr string) *http.Server {
 	mux.Handle("/swagger/", httpSwagger.WrapHandler)
 	mux.HandleFunc("/validate", a.Handler.ValidatePayment)
 
-	server := &http.Server{
+	httpServer := &http.Server{
 		Addr:    addr,
 		Handler: mux,
 	}
 
 	go func() {
-		fmt.Printf("Listening http on port %s\n", server.Addr)
-		if err := server.ListenAndServe(); err != nil &&
+		fmt.Printf("Listening http on port %s\n", httpServer.Addr)
+		if err := httpServer.ListenAndServe(); err != nil &&
 			err != http.ErrServerClosed {
 			log.Fatalf("HTTP server closed with error: %s\n", err)
 		}
 	}()
 
-	return server
+	return httpServer
 }
 
 func (a *App) StartGRPC(addr string) *grpc.Server {
@@ -52,17 +52,17 @@ func (a *App) StartGRPC(addr string) *grpc.Server {
 		log.Fatalf("failed to listen: %v", err)
 	}
 
-	s := grpc.NewServer()
-	grpcapi.RegisterPaymentCheckerServer(s, grpcapi.NewGRPCHandler(a.Provider, a.Policy))
+	grpcServer := grpc.NewServer()
+	grpcapi.RegisterPaymentCheckerServer(grpcServer, grpcapi.NewGRPCHandler(a.Provider, a.Policy))
 
 	go func() {
 		fmt.Printf("Listening grpc on port %s\n", addr)
-		if err := s.Serve(listen); err != nil {
+		if err := grpcServer.Serve(listen); err != nil {
 			log.Fatalf("grpc server closed with error: %s\n", err)
 		}
 	}()
 
-	return s
+	return grpcServer
 }
 
 func (a *App) Shutdown(httpSrv *http.Server, grpcSrv *grpc.Server, timeout time.Duration) {
@@ -74,7 +74,7 @@ func (a *App) Shutdown(httpSrv *http.Server, grpcSrv *grpc.Server, timeout time.
 	}
 
 	if grpcSrv != nil {
-		_ = grpcSrv.GracefulStop
+		grpcSrv.GracefulStop()
 	}
 
 	fmt.Println("Servers shutdown complete")
