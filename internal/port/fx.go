@@ -5,7 +5,14 @@ import (
 	"time"
 )
 
-type FXRateProvider interface {
+type RateByCurrency interface {
 	GetRate(date time.Time, currency domain.CurrencyCode) (domain.Rate, error)
+}
+
+type CurrencyChecker interface {
 	HasCurrency(currency domain.CurrencyCode) bool
+}
+
+type RatesByDateProvider interface {
+	GetRatesByDate(date time.Time) ([]domain.Rate, error)
 }

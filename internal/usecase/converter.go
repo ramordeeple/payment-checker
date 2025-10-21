@@ -7,10 +7,10 @@ import (
 )
 
 type Converter struct {
-	fx port.FXRateProvider
+	fx port.RateByCurrency
 }
 
-func NewConverter(fx port.FXRateProvider) *Converter {
+func NewConverter(fx port.RateByCurrency) *Converter {
 	return &Converter{fx: fx}
 }
 

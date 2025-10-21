@@ -22,7 +22,7 @@ import (
 type App struct {
 	Policy   *usecase.Policy
 	Handler  *httpapi.Handler
-	Provider port.FXRateProvider
+	Provider *port.RateByCurrency
 }
 
 func (a *App) StartHTTP(addr string) *http.Server {
@@ -87,7 +87,7 @@ func InitDB(driverName, dsn string) *App {
 	}
 
 	repo := repository.NewRateRepo(db)
-	var fx port.FXRateProvider = repo
+	var fx port.RateByCurrency = repo
 
 	converter := usecase.NewConverter(repo)
 	policy := usecase.NewPolicy(converter, usecase.MaxRubKopecks)

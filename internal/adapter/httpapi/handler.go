@@ -10,11 +10,12 @@ import (
 )
 
 type Handler struct {
-	provider port.FXRateProvider
-	policy   *usecase.Policy
+	provider      port.RateByCurrency
+	policy        *usecase.Policy
+	currencyCheck port.CurrencyChecker
 }
 
-func NewHandler(fx port.FXRateProvider, policy *usecase.Policy) *Handler {
+func NewHandler(fx port.RateByCurrency, policy *usecase.Policy) *Handler {
 	return &Handler{
 		provider: fx,
 		policy:   policy,
@@ -40,7 +41,7 @@ func (h *Handler) ValidatePayment(w http.ResponseWriter, r *http.Request) {
 
 	currency := domain.CurrencyCode(reqDTO.Currency)
 
-	if !h.provider.HasCurrency(currency) {
+	if !h.currencyCheck.HasCurrency(currency) {
 		http.Error(w, domain.ErrCurrencyNotFound.Error(), http.StatusNotFound)
 		return
 	}

@@ -9,11 +9,12 @@ import (
 
 type GRPCHandler struct {
 	UnimplementedPaymentCheckerServer
-	provider port.FXRateProvider
-	policy   *usecase.Policy
+	provider      port.RateByCurrency
+	policy        *usecase.Policy
+	currencyCheck port.CurrencyChecker
 }
 
-func NewGRPCHandler(provider port.FXRateProvider, policy *usecase.Policy) *GRPCHandler {
+func NewGRPCHandler(provider port.RateByCurrency, policy *usecase.Policy) *GRPCHandler {
 	return &GRPCHandler{
 		provider: provider,
 		policy:   policy,
@@ -26,7 +27,7 @@ func (h *GRPCHandler) ValidatePayment(
 
 	currency := domain.CurrencyCode(req.Currency)
 
-	if !h.provider.HasCurrency(currency) {
+	if !h.currencyCheck.HasCurrency(currency) {
 		return nil, domain.ErrRateNotFound
 	}
 
