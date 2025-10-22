@@ -10,6 +10,7 @@ import (
 	"payment-checker/internal/adapter/grpcapi"
 	"payment-checker/internal/adapter/httpapi"
 	"payment-checker/internal/adapter/repository"
+	"payment-checker/internal/port"
 	"payment-checker/internal/usecase"
 	"time"
 
@@ -21,13 +22,16 @@ import (
 type App struct {
 	Policy   *usecase.Policy
 	Handler  *httpapi.Handler
-	Provider *repository.RateRepo
+	Provider port.FXRateProvider
 }
 
 func (a *App) StartHTTP(addr string) *http.Server {
 	mux := http.NewServeMux()
 	mux.Handle("/swagger/", httpSwagger.WrapHandler)
 	mux.HandleFunc("/validate", a.Handler.ValidatePayment)
+
+	cbrHandler := httpapi.NewCBRHandler(a.Provider)
+	mux.Handle("/cbr", cbrHandler)
 
 	httpServer := &http.Server{
 		Addr:    addr,

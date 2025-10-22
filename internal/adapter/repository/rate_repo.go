@@ -19,10 +19,10 @@ func (r *RateRepo) GetRate(date time.Time, currency domain.CurrencyCode) (domain
 	var valueScaled int64
 
 	row := r.db.QueryRow(`
-		SELECT nominal, value_scaled
-		FROM rates
-		WHERE date = $1 AND currency = $2`,
-		currency, date.Format("2006-01-02"))
+    SELECT nominal, value_scaled
+    FROM rates
+    WHERE date = $1 AND currency = $2`,
+		date.Format("2006-01-02"), string(currency))
 
 	if err := row.Scan(&nominal, &valueScaled); err != nil {
 		if err == sql.ErrNoRows {

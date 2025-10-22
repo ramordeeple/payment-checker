@@ -19,3 +19,26 @@ Content-Type: application/json
 "currency": "USD",
 "date": "2025-10-10"
 }
+
+### Получение курса валюты через мок ЦБ
+GET http://localhost:8080/cbr?currency=USD&date=2025-10-21
+Accept: application/json
+
+###
+
+GET http://localhost:8080/cbr?currency=EUR
+Accept: application/json
+
+###
+
+GET http://localhost:8080/cbr?currency=RUB
+Accept: application/json
+
+###
+
+GET http://localhost:8080/cbr
+Accept: application/json
+
+###
+GET http://localhost:8080/cbr?currency=RUB&date=2025-10-21
+Accept: application/json

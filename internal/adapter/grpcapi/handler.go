@@ -5,6 +5,9 @@ import (
 	"payment-checker/internal/port"
 	"payment-checker/internal/usecase"
 	"time"
+
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 type GRPCHandler struct {
@@ -14,10 +17,11 @@ type GRPCHandler struct {
 	currencyCheck port.CurrencyChecker
 }
 
-func NewGRPCHandler(provider port.RateByCurrency, policy *usecase.Policy) *GRPCHandler {
+func NewGRPCHandler(fx port.FXRateProvider, policy *usecase.Policy) *GRPCHandler {
 	return &GRPCHandler{
-		provider: provider,
-		policy:   policy,
+		provider:      fx,
+		currencyCheck: fx,
+		policy:        policy,
 	}
 }
 
@@ -28,7 +32,7 @@ func (h *GRPCHandler) ValidatePayment(
 	currency := domain.CurrencyCode(req.Currency)
 
 	if !h.currencyCheck.HasCurrency(currency) {
-		return nil, domain.ErrRateNotFound
+		return nil, status.Error(codes.NotFound, "currency not found")
 	}
 
 	money := domain.Money{
@@ -44,7 +48,7 @@ func (h *GRPCHandler) ValidatePayment(
 
 	resp, err := h.policy.Validate(validateReq)
 	if err != nil {
-		return nil, err
+		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
 
 	return &ValidatePaymentResponse{
