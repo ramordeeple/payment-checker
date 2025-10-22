@@ -27,6 +27,18 @@ func NewCBRHandler(rateProvider port.RateByCurrency) *CBRHandler {
 	return &CBRHandler{rateProvider: rateProvider}
 }
 
+// GetCBRRate godoc
+// @Summary Get currency rate
+// @Description Returns the rate for a given currency and date from the mock CBR service
+// @Tags cbr
+// @Accept json
+// @Produce json
+// @Param currency query string true "Currency code"
+// @Param date query string false "Date in YYYY-MM-DD format"
+// @Success 200 {object} CBRRateResponse
+// @Failure 400 {string} string "Bad request"
+// @Failure 404 {string} string "Rate not found"
+// @Router /cbr [get]
 func (h *CBRHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	currency, date, err := parseAndValidateParams(r)
 	if err != nil {

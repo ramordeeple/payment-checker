@@ -1,4 +1,15 @@
 definitions:
+  httpapi.CBRRateResponse:
+    properties:
+      char_code:
+        type: string
+      date:
+        type: string
+      nominal:
+        type: integer
+      value_scaled:
+        type: integer
+    type: object
   httpapi.ValidatePaymentRequest:
     properties:
       amount:
@@ -22,6 +33,40 @@ definitions:
 info:
   contact: {}
 paths:
+  /cbr:
+    get:
+      consumes:
+      - application/json
+      description: Returns the rate for a given currency and date from the mock CBR
+        service
+      parameters:
+      - description: Currency code
+        in: query
+        name: currency
+        required: true
+        type: string
+      - description: Date in YYYY-MM-DD format
+        in: query
+        name: date
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/httpapi.CBRRateResponse'
+        "400":
+          description: Bad request
+          schema:
+            type: string
+        "404":
+          description: Rate not found
+          schema:
+            type: string
+      summary: Get currency rate
+      tags:
+      - cbr
   /validate:
     post:
       consumes:

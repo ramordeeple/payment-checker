@@ -15,6 +15,56 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/cbr": {
+            "get": {
+                "description": "Returns the rate for a given currency and date from the mock CBR service",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "cbr"
+                ],
+                "summary": "Get currency rate",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Currency code",
+                        "name": "currency",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Date in YYYY-MM-DD format",
+                        "name": "date",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/httpapi.CBRRateResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "404": {
+                        "description": "Rate not found",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/validate": {
             "post": {
                 "description": "Validates a payment request with amount, currency, and date",
@@ -57,6 +107,23 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "httpapi.CBRRateResponse": {
+            "type": "object",
+            "properties": {
+                "char_code": {
+                    "type": "string"
+                },
+                "date": {
+                    "type": "string"
+                },
+                "nominal": {
+                    "type": "integer"
+                },
+                "value_scaled": {
+                    "type": "integer"
+                }
+            }
+        },
         "httpapi.ValidatePaymentRequest": {
             "type": "object",
             "properties": {
