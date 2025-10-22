@@ -1,3 +1,4 @@
+# Проверка платежа в рублях
 POST http://localhost:8080/validate
 Content-Type: application/json
 
@@ -8,37 +9,15 @@ Content-Type: application/json
   "date": "2025-10-10"
 }
 
-###
-
-POST http://localhost:8080/validate
-Content-Type: application/json
-
-{
-"provider": "provider",
-"amount": 10000,
-"currency": "USD",
-"date": "2025-10-10"
-}
-
-### Получение курса валюты через мок ЦБ
+### Получение курса валюты через мок ЦБ (пример USD)
 GET http://localhost:8080/cbr?currency=USD&date=2025-10-21
 Accept: application/json
 
-###
-
-GET http://localhost:8080/cbr?currency=EUR
+### Получение курса EUR
+GET http://localhost:8080/cbr?currency=EUR&date=2025-10-21
 Accept: application/json
 
-###
 
-GET http://localhost:8080/cbr?currency=RUB
-Accept: application/json
-
-###
-
-GET http://localhost:8080/cbr
-Accept: application/json
-
-###
-GET http://localhost:8080/cbr?currency=RUB&date=2025-10-21
-Accept: application/json
+### Через xml
+GET http://localhost:8080/cbr?currency=USD&date=2025-10-21
+Accept: application/xml

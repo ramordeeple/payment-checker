@@ -2,6 +2,7 @@ package httpapi
 
 import (
 	"encoding/json"
+	"encoding/xml"
 	"errors"
 	"fmt"
 	"net/http"
@@ -15,10 +16,11 @@ type CBRHandler struct {
 }
 
 type CBRRateResponse struct {
-	CharCode    string `json:"char_code"`
-	Nominal     int32  `json:"nominal"`
-	ValueScaled int64  `json:"value_scaled"`
-	Date        string `json:"date"`
+	XMLName     xml.Name `xml:"Valute" json:"-"`
+	CharCode    string   `xml:"CharCode" json:"char_code"`
+	Nominal     int32    `xml:"Nominal" json:"nominal"`
+	ValueScaled int64    `xml:"Value" json:"value_scaled"`
+	Date        string   `xml:"-" json:"date"`
 }
 
 func NewCBRHandler(rateProvider port.RateByCurrency) *CBRHandler {
@@ -37,22 +39,22 @@ func (h *CBRHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	resp := toCBRRateResponse(rate)
-	w.Header().Set("Content-Type", "application/json")
-	if err := json.NewEncoder(w).Encode(resp); err != nil {
-		http.Error(w, fmt.Sprintf("failed to encode response: %v", err), http.StatusInternalServerError)
+	response := CBRRateResponse{
+		CharCode:    string(rate.Currency),
+		Nominal:     rate.Nominal,
+		ValueScaled: rate.ValueScaled,
+		Date:        date.Format("2006-01-02"),
 	}
-}
 
-func parseDate(dateStr string) (time.Time, error) {
-	if dateStr == "" {
-		return time.Now(), nil
+	// Определяем формат ответа
+	accept := r.Header.Get("Accept")
+	if accept == "application/xml" {
+		w.Header().Set("Content-Type", "application/xml; charset=utf-8")
+		xml.NewEncoder(w).Encode(response)
+	} else {
+		w.Header().Set("Content-Type", "application/json; charset=utf-8")
+		json.NewEncoder(w).Encode(response)
 	}
-	date, err := time.Parse("2006-01-02", dateStr)
-	if err != nil {
-		return time.Time{}, fmt.Errorf("invalid date format, expected YYYY-MM-DD: %w", err)
-	}
-	return date, nil
 }
 
 func parseAndValidateParams(r *http.Request) (domain.CurrencyCode, time.Time, error) {
@@ -70,6 +72,17 @@ func parseAndValidateParams(r *http.Request) (domain.CurrencyCode, time.Time, er
 	return currency, date, nil
 }
 
+func parseDate(dateStr string) (time.Time, error) {
+	if dateStr == "" {
+		return time.Now(), nil
+	}
+	date, err := time.Parse("2006-01-02", dateStr)
+	if err != nil {
+		return time.Time{}, fmt.Errorf("invalid date format, expected YYYY-MM-DD: %w", err)
+	}
+	return date, nil
+}
+
 func handleRateError(w http.ResponseWriter, err error) bool {
 	if err == nil {
 		return false
@@ -82,13 +95,4 @@ func handleRateError(w http.ResponseWriter, err error) bool {
 
 	http.Error(w, err.Error(), http.StatusInternalServerError)
 	return true
-}
-
-func toCBRRateResponse(rate domain.Rate) CBRRateResponse {
-	return CBRRateResponse{
-		CharCode:    string(rate.Currency),
-		Nominal:     rate.Nominal,
-		ValueScaled: rate.ValueScaled,
-		Date:        rate.Date.Format("2006-01-02"),
-	}
 }
