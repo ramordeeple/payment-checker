@@ -33,6 +33,8 @@ func NewCBRHandler(rateProvider port.RateByCurrency) *CBRHandler {
 // @Tags cbr
 // @Accept json
 // @Produce json
+// @Accept xml
+// @Produce xml
 // @Param currency query string true "Currency code"
 // @Param date query string false "Date in YYYY-MM-DD format"
 // @Success 200 {object} CBRRateResponse

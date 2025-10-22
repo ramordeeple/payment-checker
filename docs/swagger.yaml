@@ -37,6 +37,7 @@ paths:
     get:
       consumes:
       - application/json
+      - text/xml
       description: Returns the rate for a given currency and date from the mock CBR
         service
       parameters:
@@ -51,6 +52,7 @@ paths:
         type: string
       produces:
       - application/json
+      - text/xml
       responses:
         "200":
           description: OK

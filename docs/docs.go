@@ -19,10 +19,12 @@ const docTemplate = `{
             "get": {
                 "description": "Returns the rate for a given currency and date from the mock CBR service",
                 "consumes": [
-                    "application/json"
+                    "application/json",
+                    "text/xml"
                 ],
                 "produces": [
-                    "application/json"
+                    "application/json",
+                    "text/xml"
                 ],
                 "tags": [
                     "cbr"
