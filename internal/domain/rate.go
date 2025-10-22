@@ -1,7 +1,6 @@
 package domain
 
 import (
-	"fmt"
 	"time"
 )
 
@@ -29,9 +28,4 @@ func NewRate(date time.Time, currency CurrencyCode, nominal int32, valueScaled i
 		Nominal:     nominal,
 		ValueScaled: valueScaled,
 	}, nil
-}
-
-// Для удобной совместимости с ЦБ xml
-func (r Rate) FormatValueScaled() string {
-	return fmt.Sprintf("%d,%04d", r.ValueScaled/RateScale, r.ValueScaled%RateScale)
 }
