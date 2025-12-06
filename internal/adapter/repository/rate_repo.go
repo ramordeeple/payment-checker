@@ -2,12 +2,70 @@ package repository
 
 import (
 	"database/sql"
+	"fmt"
 	"payment-checker/internal/domain"
 	"time"
 )
 
 type RateRepo struct {
 	db *sql.DB
+}
+
+func (r *RateRepo) GetRatesByDate(date time.Time) ([]domain.Rate, error) {
+	rows, err := r.db.Query(`
+		SELECT currency, nominal, value_scaled
+		FROM rates
+		WHERE date = $1`, date.Format("2006-01-02"))
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var rates []domain.Rate
+	for rows.Next() {
+		var currency string
+		var nominal int32
+		var valueScaled int64
+		if err := rows.Scan(&currency, &nominal, &valueScaled); err != nil {
+			return nil, err
+		}
+
+		rates = append(rates, domain.Rate{
+			Date:        date,
+			Currency:    domain.CurrencyCode(currency),
+			Nominal:     nominal,
+			ValueScaled: valueScaled,
+		})
+	}
+
+	if len(rates) == 0 {
+		return nil, domain.ErrRateNotFound
+	}
+
+	return rates, nil
+}
+
+func (r *RateRepo) GetCurrencyMeta(code domain.CurrencyCode) (domain.Currency, error) {
+	var nameRU, numCode, cbrID string
+	row := r.db.QueryRow(`
+        SELECT name, num_code, cbr_id
+        FROM currencies
+        WHERE code = $1
+    `, string(code))
+
+	if err := row.Scan(&nameRU, &numCode, &cbrID); err != nil {
+		if err == sql.ErrNoRows {
+			return domain.Currency{}, fmt.Errorf("currency not found")
+		}
+		return domain.Currency{}, err
+	}
+
+	return domain.Currency{
+		Code:    code,
+		NameRU:  nameRU,
+		NumCode: numCode,
+		CBRID:   cbrID,
+	}, nil
 }
 
 func NewRateRepo(database *sql.DB) *RateRepo {
