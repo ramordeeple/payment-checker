@@ -30,8 +30,8 @@ func (a *App) StartHTTP(addr string) *http.Server {
 	mux.Handle("/swagger/", httpSwagger.WrapHandler)
 	mux.HandleFunc("/validate", a.Handler.ValidatePayment)
 
-	cbrHandler := httpapi.NewCBRHandler(a.Provider)
-	mux.Handle("/cbr", cbrHandler)
+	cbrHandler := httpapi.NewCBRDailyHandler(a.Provider)
+	mux.Handle("/scripts/XML_daily.asp", cbrHandler)
 
 	httpServer := &http.Server{
 		Addr:    addr,
