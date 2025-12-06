@@ -1,112 +1,97 @@
 package httpapi
 
 import (
-	"encoding/json"
 	"encoding/xml"
-	"errors"
 	"fmt"
 	"net/http"
-	"payment-checker/internal/domain"
 	"payment-checker/internal/port"
 	"time"
 )
 
-type CBRHandler struct {
-	rateProvider port.RateByCurrency
+type CBRDailyHandler struct {
+	provider port.RatesByDateProvider
 }
 
-type CBRRateResponse struct {
-	XMLName     xml.Name `xml:"Valute" json:"-"`
-	CharCode    string   `xml:"CharCode" json:"char_code"`
-	Nominal     int32    `xml:"Nominal" json:"nominal"`
-	ValueScaled int64    `xml:"Value" json:"value_scaled"`
-	Date        string   `xml:"-" json:"date"`
+type ValCurs struct {
+	XMLName xml.Name    `xml:"ValCurs"`
+	Date    string      `xml:"Date,attr"`
+	Name    string      `xml:"name,attr"`
+	Valutes []ValuteXML `xml:"Valute"`
 }
 
-func NewCBRHandler(rateProvider port.RateByCurrency) *CBRHandler {
-	return &CBRHandler{rateProvider: rateProvider}
+type ValuteXML struct {
+	ID       string `xml:"ID,attr"`
+	NumCode  string `xml:"NumCode"`
+	CharCode string `xml:"CharCode"`
+	Nominal  int32  `xml:"Nominal"`
+	Name     string `xml:"Name"`
+	Value    string `xml:"Value"`
 }
 
-// GetCBRRate godoc
-// @Summary Get currency rate
-// @Description Returns the rate for a given currency and date from the mock CBR service
-// @Tags cbr
-// @Accept json
-// @Produce json
-// @Accept xml
-// @Produce xml
-// @Param currency query string true "Currency code"
-// @Param date query string false "Date in YYYY-MM-DD format"
-// @Success 200 {object} CBRRateResponse
-// @Failure 400 {string} string "Bad request"
-// @Failure 404 {string} string "Rate not found"
-// @Router /cbr [get]
-func (h *CBRHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	currency, date, err := parseAndValidateParams(r)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+func (h *CBRDailyHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	dateReq := r.URL.Query().Get("date_req")
+	if dateReq == "" {
+		http.Error(w, "date_req is required, format DD/MM/YYYY", http.StatusBadRequest)
 		return
 	}
 
-	rate, err := h.rateProvider.GetRate(date, currency)
-	if handleRateError(w, err) {
+	date, err := time.Parse("02/01/2006", dateReq)
+	if err != nil {
+		http.Error(w, "invalid date_req format, expected DD/MM/YYYY", http.StatusBadRequest)
 		return
 	}
 
-	response := CBRRateResponse{
-		CharCode:    string(rate.Currency),
-		Nominal:     rate.Nominal,
-		ValueScaled: rate.ValueScaled,
-		Date:        date.Format("2006-01-02"),
-	}
-
-	// Определяем формат ответа
-	accept := r.Header.Get("Accept")
-	if accept == "application/xml" {
-		w.Header().Set("Content-Type", "application/xml; charset=utf-8")
-		xml.NewEncoder(w).Encode(response)
-	} else {
-		w.Header().Set("Content-Type", "application/json; charset=utf-8")
-		json.NewEncoder(w).Encode(response)
-	}
-}
-
-func parseAndValidateParams(r *http.Request) (domain.CurrencyCode, time.Time, error) {
-	currency := domain.CurrencyCode(r.URL.Query().Get("currency"))
-	if currency == "" {
-		return "", time.Time{}, errors.New("currency query parameter is required")
-	}
-
-	dateStr := r.URL.Query().Get("date")
-	date, err := parseDate(dateStr)
+	// Получаем курсы по дате
+	rates, err := h.provider.GetRatesByDate(date)
 	if err != nil {
-		return "", time.Time{}, err
+		fmt.Println("GetRatesByDate error:", err)
+		http.Error(w, "rate not found", http.StatusNotFound)
+		return
 	}
 
-	return currency, date, nil
+	fmt.Println("Rates returned from GetRatesByDate:", rates)
+
+	response := ValCurs{
+		Date: date.Format("02.01.2006"),
+		Name: "Foreign Currency Market",
+	}
+
+	for _, rate := range rates {
+		fmt.Printf("Processing rate: Currency=%s Nominal=%d ValueScaled=%d\n",
+			rate.Currency, rate.Nominal, rate.ValueScaled)
+
+		meta, err := h.provider.GetCurrencyMeta(rate.Currency)
+		if err != nil {
+			fmt.Println("Currency meta not found for", rate.Currency, "error:", err)
+			continue
+		}
+
+		fmt.Println("Currency meta found:", meta)
+
+		response.Valutes = append(response.Valutes, ValuteXML{
+			ID:       meta.CBRID,
+			NumCode:  meta.NumCode,
+			CharCode: string(rate.Currency),
+			Nominal:  rate.Nominal,
+			Name:     meta.NameRU,
+			Value:    formatCBRValue(rate.ValueScaled),
+		})
+	}
+
+	if len(response.Valutes) == 0 {
+		fmt.Println("No Valutes added to response; check rates and currency meta in DB")
+	}
+
+	w.Header().Set("Content-Type", "application/xml; charset=utf-8")
+	xml.NewEncoder(w).Encode(response)
 }
 
-func parseDate(dateStr string) (time.Time, error) {
-	if dateStr == "" {
-		return time.Now(), nil
-	}
-	date, err := time.Parse("2006-01-02", dateStr)
-	if err != nil {
-		return time.Time{}, fmt.Errorf("invalid date format, expected YYYY-MM-DD: %w", err)
-	}
-	return date, nil
+func NewCBRDailyHandler(provider port.RatesByDateProvider) *CBRDailyHandler {
+	return &CBRDailyHandler{provider: provider}
 }
 
-func handleRateError(w http.ResponseWriter, err error) bool {
-	if err == nil {
-		return false
-	}
-
-	if errors.Is(err, domain.ErrRateNotFound) {
-		http.Error(w, err.Error(), http.StatusNotFound)
-		return true
-	}
-
-	http.Error(w, err.Error(), http.StatusInternalServerError)
-	return true
+func formatCBRValue(valueScaled int64) string {
+	intPart := valueScaled / 10000
+	fracPart := valueScaled % 10000
+	return fmt.Sprintf("%d,%04d", intPart, fracPart)
 }
