@@ -12,7 +12,6 @@ VALUES ('RUB', 'Российский рубль', '643', 'R00000'),
        ('EUR', 'Евро', '978', 'R01239'),
        ('JPY', 'Японская иена', '392', 'R01820');
 
-
 CREATE TABLE rates
 (
     id           SERIAL PRIMARY KEY,

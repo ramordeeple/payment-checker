@@ -140,21 +140,26 @@ Content-Type: application/json
  Получение курса валюты (мок ЦБ)
 
 ```http
-GET http://localhost:8080/cbr?currency=USD&date=2025-10-21
+GET http://localhost:8080/scripts/XML_daily.asp?date_req=21/10/2025
 Accept: application/xml
 ```
 
 **Пример ответа:**
 
 ```xml
-<Valute>
-<CharCode>USD</CharCode>
-<Nominal>1</Nominal>
-<Value>751234</Value>
-</Valute>
+<ValCurs Date="21.10.2025" name="Foreign Currency Market">
+    <Valute ID="R00000">
+        <NumCode>643</NumCode>
+        <CharCode>RUB</CharCode>
+        <Nominal>1</Nominal>
+        <Name>Российский рубль</Name>
+        <Value>1,0000</Value>
+    </Valute>
+...
 ```
 
 > ⚠️ Здесь `Value` имеет тип `int64` во избежания ошибок с плавающей точкой. По сути **USD** получен в центах.
+
 ---
 
 ## 📡 gRPC
