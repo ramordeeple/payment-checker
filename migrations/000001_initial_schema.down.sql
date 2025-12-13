@@ -6,11 +6,11 @@ CREATE TABLE currencies
     cbr_id   TEXT NOT NULL     -- "R01235"
 );
 
-INSERT INTO currencies (code, name_ru, num_code, cbr_id)
+INSERT INTO currencies (code, name, num_code, cbr_id)
 VALUES ('RUB', 'Российский рубль', '643', 'R00000'),
        ('USD', 'Доллар США', '840', 'R01235'),
        ('EUR', 'Евро', '978', 'R01239'),
-       ('JPY', 'Японская иена', '392', 'R01820');
+       ('JPY', 'Японская йена', '392', 'R01820');
 
 CREATE TABLE rates
 (
