@@ -41,12 +41,12 @@ docs/               — сгенерированная Swagger документ�
 
 ### 1️⃣ Предварительные требования
 
-* Go 1.21+
-* Docker Desktop  (для базы данных)
+* 💻 Go 1.25+
+* 🐳 Docker Desktop 
 
 ---
 
-### 2️⃣ Поднять базу данных
+### 2️⃣ Поднять базу данных и сервис в Docker
 
 Пример `docker-compose.yml`:
 
@@ -54,15 +54,26 @@ docs/               — сгенерированная Swagger документ�
 services:
   db:
     image: postgres:latest
-    command: ["postgres", "-c", "port=5433"]
     environment:
-      POSTGRES_DB: payment_db
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: 123
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     ports:
-      - "5433:5433"
-    volumes:
-      - ./migrations:/docker-entrypoint-initdb.d
+      - "5433:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 2s
+      retries: 10
+
+  app:
+    build: .
+    ports:
+      - "8080:8080"
+    env_file:
+      - .env
+    depends_on:
+      db:
+        condition: service_healthy
 ```
 
 В корне проекта:
@@ -90,10 +101,13 @@ docker compose up -d
 
 ### 3️⃣ Настройка переменных окружения
 
-Указан в `main.go` только для базы данных:
+Указаны в `.env`:
 
 ```
-DB_URL=postgres://postgres:123@localhost:5433/payment_db?sslmode=disable
+DATABASE_URL=postgres://postgres:123@db:5432/payment_db?sslmode=disable
+POSTGRES_USER=postgres
+POSTGRES_PASSWORD=123
+POSTGRES_DB=payment_db
 ```
 
 ---
@@ -123,21 +137,7 @@ go run main.go
 
 ## 🌐 API
 
-### Проверка 
-
-```http
-POST http://localhost:8080/validate
-Content-Type: application/json
-
-{
-  "provider": "provider",
-  "amount": 751234,
-  "currency": "RUB",
-  "date": "2025-10-10"
-}
-```
-
- Получение курса валюты (мок ЦБ)
+### Проверка получения курса валюты (мок ЦБ)
 
 ```http
 GET http://localhost:8080/scripts/XML_daily.asp?date_req=21/10/2025
