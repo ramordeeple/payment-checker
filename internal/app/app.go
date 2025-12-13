@@ -83,10 +83,18 @@ func (a *App) Shutdown(httpSrv *http.Server, grpcSrv *grpc.Server, timeout time.
 	fmt.Println("Servers shutdown complete")
 }
 
-func InitDB(driverName, dsn string) *App {
+func InitDB(driverName, dsn, migrationsPath string) *App {
 	db, err := sql.Open(driverName, dsn)
 	if err != nil {
-		log.Fatalf("cannot connect to database: %w", err)
+		log.Fatalf("cannot connect to database: %v", err)
+	}
+
+	if err := db.Ping(); err != nil {
+		log.Fatalf("cannot ping database: %v", err)
+	}
+
+	if err := repository.RunMigrations(db, migrationsPath); err != nil {
+		log.Fatalf("failed to run migrations: %v", err)
 	}
 
 	repo := repository.NewRateRepo(db)
