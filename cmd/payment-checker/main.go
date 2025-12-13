@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"log"
 	"os"
 	"os/signal"
 	_ "payment-checker/docs"
@@ -10,18 +11,19 @@ import (
 )
 
 func main() {
-	ctx, stop := signal.NotifyContext(
-		context.Background(),
-		os.Interrupt,
-	)
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt)
 	defer stop()
 
-	a := app.InitDB(
-		"postgres",
-		"postgres://postgres:123@localhost:5433/payment_db?sslmode=disable")
+	dsn := os.Getenv("DATABASE_URL")
+	if dsn == "" {
+		log.Fatal("DATABASE_URL is not set")
+	}
+
+	a := app.InitDB("postgres", dsn, "file:///app/migrations")
 
 	httpSrv := a.StartHTTP(":8080")
 	grpcSrv := a.StartGRPC(":8090")
+
 	<-ctx.Done()
 
 	a.Shutdown(httpSrv, grpcSrv, 5*time.Second)
