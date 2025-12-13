@@ -11,13 +11,11 @@ import (
 	_ "github.com/lib/pq"
 )
 
-func RunMigrations(db *sql.DB, migrationsDir string) error {
+func RunMigrations(db *sql.DB, migrationsPath string) error {
 	driver, err := postgres.WithInstance(db, &postgres.Config{})
 	if err != nil {
 		return fmt.Errorf("failed to create migration driver: %w", err)
 	}
-
-	migrationsPath := fmt.Sprintf("file://%s", migrationsDir)
 
 	m, err := migrate.NewWithDatabaseInstance(
 		migrationsPath,
