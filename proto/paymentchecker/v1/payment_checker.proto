@@ -2,21 +2,21 @@ syntax = "proto3";
 
 package paymentchecker.v1;
 
-option go_package = "internal/adapter/grpcapi;grpcapi";
+option go_package = "payment-checker/internal/grpc/paymentchecker/v1;paymentcheckerv1";
 
 message ValidatePaymentRequest {
-string provider = 1;
-int64 amount = 2;
-string currency = 3;
-string date = 4;
+  string provider = 1;
+  int64 amount = 2;
+  string currency = 3;
+  string date = 4;
 }
 
 message ValidatePaymentResponse {
-bool allowed = 1;
-int64 total_rub_in_kopecks = 2;
-string reason = 3;
+  bool allowed = 1;
+  int64 total_rub_in_kopecks = 2;
+  string reason = 3;
 }
 
 service PaymentChecker {
-rpc Validate(ValidatePaymentRequest) returns (ValidatePaymentResponse);
+  rpc Validate(ValidatePaymentRequest) returns (ValidatePaymentResponse);
 }
