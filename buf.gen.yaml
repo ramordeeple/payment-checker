@@ -2,7 +2,9 @@ version: v1
 plugins:
   - name: go
     out: internal/grpc
-    opt: paths=source_relative
+    opt:
+      - paths=source_relative
   - name: go-grpc
     out: internal/grpc
-    opt: paths=source_relative
+    opt:
+      - paths=source_relative
