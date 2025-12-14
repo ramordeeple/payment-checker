@@ -13,7 +13,10 @@ type fakeFX struct {
 	err  error
 }
 
-func (f fakeFX) GetRate() (domain.Rate, error) {
+func (f fakeFX) GetRate(date time.Time, currency domain.CurrencyCode) (domain.Rate, error) {
+	if f.err != nil {
+		return domain.Rate{}, f.err
+	}
 	return f.rate, nil
 }
 

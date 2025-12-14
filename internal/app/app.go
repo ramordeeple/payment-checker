@@ -3,13 +3,16 @@ package app
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"fmt"
 	"log"
 	"net"
 	"net/http"
-	"payment-checker/internal/adapter/grpcapi"
+	"payment-checker/internal/adapter/grpcadapter"
 	"payment-checker/internal/adapter/httpapi"
 	"payment-checker/internal/adapter/repository"
+	paymentcheckerv1 "payment-checker/internal/grpc/proto/paymentchecker/v1"
+
 	"payment-checker/internal/port"
 	"payment-checker/internal/usecase"
 	"time"
@@ -49,23 +52,27 @@ func (a *App) StartHTTP(addr string) *http.Server {
 	return httpServer
 }
 
-func (a *App) StartGRPC(addr string) *grpc.Server {
-	listen, err := net.Listen("tcp", addr)
+func (a *App) StartGRPC(addr string) (*grpc.Server, net.Listener, error) {
+	lis, err := net.Listen("tcp", addr)
 	if err != nil {
-		log.Fatalf("failed to listen: %v", err)
+		return nil, nil, fmt.Errorf("failed to listen on %s: %w", addr, err)
 	}
 
 	grpcServer := grpc.NewServer()
-	grpcapi.RegisterPaymentCheckerServer(grpcServer, grpcapi.NewGRPCHandler(a.Provider, a.Policy))
+
+	paymentcheckerv1.RegisterPaymentCheckerServer(
+		grpcServer,
+		grpcadapter.NewHandler(a.Provider, a.Policy),
+	)
 
 	go func() {
-		fmt.Printf("Listening grpc on port %s\n", addr)
-		if err := grpcServer.Serve(listen); err != nil {
-			log.Fatalf("grpc server closed with error: %s\n", err)
+		log.Printf("gRPC server listening on %s", addr)
+		if err := grpcServer.Serve(lis); err != nil && !errors.Is(err, grpc.ErrServerStopped) {
+			log.Fatalf("gRPC server stopped with error: %v", err)
 		}
 	}()
 
-	return grpcServer
+	return grpcServer, lis, nil
 }
 
 func (a *App) Shutdown(httpSrv *http.Server, grpcSrv *grpc.Server, timeout time.Duration) {

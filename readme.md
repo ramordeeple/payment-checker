@@ -123,7 +123,7 @@ make run
 или напрямую:
 
 ```bash
-cd cmd/payment-checker
+cd cmd/paymentchecker
 go run main.go
 ```
 

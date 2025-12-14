@@ -22,7 +22,7 @@ func main() {
 	a := app.InitDB("postgres", dsn, "file:///app/migrations")
 
 	httpSrv := a.StartHTTP(":8080")
-	grpcSrv := a.StartGRPC(":8090")
+	grpcSrv, _, _ := a.StartGRPC(":8090")
 
 	<-ctx.Done()
 

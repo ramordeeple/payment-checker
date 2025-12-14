@@ -11,7 +11,7 @@ type Rate struct {
 	ValueScaled int64
 	CBRID       string
 	NumCode     string
-	NameRU      string
+	Name        string
 }
 
 const RateScale = int64(10_000) // Чтобы можно было 75.1234 хранить как целое число(751234) во избежания ошибок округления

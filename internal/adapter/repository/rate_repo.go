@@ -11,6 +11,11 @@ type RateRepo struct {
 	db *sql.DB
 }
 
+func (r *RateRepo) GetRate(date time.Time, currency domain.CurrencyCode) (domain.Rate, error) {
+	//TODO implement me
+	panic("implement me")
+}
+
 func (r *RateRepo) GetRatesByDate(date time.Time) ([]domain.Rate, error) {
 	rows, err := r.db.Query(`
 		SELECT currency, nominal, value_scaled
@@ -70,31 +75,6 @@ func (r *RateRepo) GetCurrencyMeta(code domain.CurrencyCode) (domain.Currency, e
 
 func NewRateRepo(database *sql.DB) *RateRepo {
 	return &RateRepo{db: database}
-}
-
-func (r *RateRepo) GetRate(date time.Time, currency domain.CurrencyCode) (domain.Rate, error) {
-	var nominal int32
-	var valueScaled int64
-
-	row := r.db.QueryRow(`
-    SELECT nominal, value_scaled
-    FROM rates
-    WHERE date = $1 AND currency = $2`,
-		date.Format("2006-01-02"), string(currency))
-
-	if err := row.Scan(&nominal, &valueScaled); err != nil {
-		if err == sql.ErrNoRows {
-			return domain.Rate{}, domain.ErrRateNotFound
-		}
-		return domain.Rate{}, err
-	}
-
-	return domain.Rate{
-		Date:        date,
-		Currency:    currency,
-		Nominal:     nominal,
-		ValueScaled: valueScaled,
-	}, nil
 }
 
 func (r *RateRepo) HasCurrency(currency domain.CurrencyCode) bool {

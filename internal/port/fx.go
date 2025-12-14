@@ -6,7 +6,7 @@ import (
 )
 
 type RateByCurrency interface {
-	GetRate() (domain.Rate, error)
+	GetRate(date time.Time, currency domain.CurrencyCode) (domain.Rate, error)
 }
 
 type CurrencyChecker interface {
