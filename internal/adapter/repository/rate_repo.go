@@ -2,6 +2,7 @@ package repository
 
 import (
 	"database/sql"
+	"errors"
 	"fmt"
 	"payment-checker/internal/domain"
 	"time"
@@ -12,8 +13,33 @@ type RateRepo struct {
 }
 
 func (r *RateRepo) GetRate(date time.Time, currency domain.CurrencyCode) (domain.Rate, error) {
-	//TODO implement me
-	panic("implement me")
+	var rate domain.Rate
+
+	query := `
+        SELECT date, currency, nominal, value_scaled, cbr_id, num_code, name
+        FROM rates
+        WHERE date = $1 AND currency = $2
+        LIMIT 1
+    `
+
+	row := r.db.QueryRow(query, date, string(currency))
+	err := row.Scan(
+		&rate.Date,
+		&rate.Currency,
+		&rate.Nominal,
+		&rate.ValueScaled,
+		&rate.CBRID,
+		&rate.NumCode,
+		&rate.Name,
+	)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return domain.Rate{}, domain.ErrRateUnavailable
+		}
+		return domain.Rate{}, err
+	}
+
+	return rate, nil
 }
 
 func (r *RateRepo) GetRatesByDate(date time.Time) ([]domain.Rate, error) {
