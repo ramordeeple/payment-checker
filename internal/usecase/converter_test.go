@@ -5,33 +5,49 @@ import (
 	"testing"
 )
 
-const (
-	rateValue   = 10_0000 // Условно 10.0000 RUB за 1 USD
-	amountUSD   = 123_00  // 123.00 USD
-	fxCurrency  = domain.CurrencyUSD
-	currencyRUB = domain.CurrencyRUB
-)
-
 func TestConverter_ToRUB(t *testing.T) {
 	date := setupParallel(t)
 
-	rate, err := domain.NewRate(date, fxCurrency, 1, rateValue) // 10.0000 RUB за USD
-	must(t, err)
+	fxCurrency := domain.Currency{
+		Code:    "USD",
+		NameRU:  "Доллар США",
+		NumCode: "840",
+		CBRID:   "R01235",
+	}
+	currencyRUB := domain.Currency{
+		Code:    "RUB",
+		NameRU:  "Российский рубль",
+		NumCode: "643",
+		CBRID:   "R01239",
+	}
+
+	rateValue := int64(10_0000)
+	amountUSD := int64(123_00)
+
+	rate, err := domain.NewRate(date, fxCurrency.Code, 1, rateValue)
+	if err != nil {
+		t.Fatalf("failed to create rate: %v", err)
+	}
 
 	conv := NewConverter(fakeFX{rate: rate})
-	money, err := domain.NewMoney(amountUSD, fxCurrency) // $123.00
-	must(t, err)
+
+	money, err := domain.NewMoney(amountUSD, fxCurrency.Code)
+	if err != nil {
+		t.Fatalf("failed to create money: %v", err)
+	}
 
 	got, err := conv.ToRUB(money, date)
-	must(t, err)
+	if err != nil {
+		t.Fatalf("conversion failed: %v", err)
+	}
 
-	expected := int64(amountUSD) * rateValue / domain.RateScale
+	expected := amountUSD * rateValue / domain.RateScale
 
-	if got.Currency != currencyRUB {
-		t.Fatalf("converted currency: %s (from %s), expected %s", got.Currency, fxCurrency, currencyRUB)
+	if got.Currency != currencyRUB.Code {
+		t.Fatalf("converted currency mismatch: got %s, want %s", got.Currency, currencyRUB.Code)
 	}
 
 	if got.Amount != expected {
-		t.Fatalf("got amount %d, expected %d", got.Amount, expected)
+		t.Fatalf("converted amount mismatch: got %d, want %d", got.Amount, expected)
 	}
 }

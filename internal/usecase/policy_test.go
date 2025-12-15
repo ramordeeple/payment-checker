@@ -5,49 +5,81 @@ import (
 	"testing"
 )
 
+var (
+	usdCurrency = domain.Currency{Code: "USD", NameRU: "Доллар США", NumCode: "840", CBRID: "R01235"}
+)
+
 func TestPolicy_Validate_OK_AtLimit(t *testing.T) {
-	p, date := newPolicyWithRate(t, 1, 75_0000, domain.CurrencyUSD) // Условно 75.0000 за 1 доллар
-	usd, err := domain.NewMoney(200_00, domain.CurrencyUSD)         // 200 * 75 == 15_000.00 руб
-	must(t, err)
+	const rate = 75_0000
+	const amountUSD = 200_00
+
+	p, date := newPolicyWithRate(t, 1, rate, usdCurrency.Code)
+
+	usd, err := domain.NewMoney(amountUSD, usdCurrency.Code)
+	if err != nil {
+		t.Fatalf("failed to create money: %v", err)
+	}
 
 	resp, err := p.Validate(ValidateRequest{
 		Provider: testProvider,
 		Amount:   usd,
 		Date:     date,
 	})
-	must(t, err)
+	if err != nil {
+		t.Fatalf("Validate returned error: %v", err)
+	}
 
-	assertValidation(t, resp, true, domain.ReasonOK)
+	// Проверяем reason
+	if resp.Reason != domain.ReasonOK {
+		t.Fatalf("expected reason %s, got %s", domain.ReasonOK, resp.Reason)
+	}
 
+	// Проверяем сумму RUB
 	if resp.TotalRUB.Amount != MaxRubKopecks {
-		t.Fatalf("Total rub=%s, expected=%d", resp.TotalRUB, MaxRubKopecks)
+		t.Fatalf("TotalRUB.Amount = %d, want %d", resp.TotalRUB.Amount, MaxRubKopecks)
 	}
 }
 
 func TestPolicy_Validate_LimitExceeded(t *testing.T) {
-	p, date := newPolicyWithRate(t, 1, 75_0000, domain.CurrencyUSD)
-	usd, err := domain.NewMoney(200_01, domain.CurrencyUSD)
+	p, date := newPolicyWithRate(t, 1, 75_0000, usdCurrency.Code)
+
+	usd, err := domain.NewMoney(200_01, usdCurrency.Code)
+	if err != nil {
+		t.Fatalf("failed to create money: %v", err)
+	}
 
 	resp, err := p.Validate(ValidateRequest{
 		Provider: testProvider,
 		Amount:   usd,
 		Date:     date,
 	})
-	must(t, err)
+	if err != nil {
+		t.Fatalf("Validate returned error: %v", err)
+	}
 
-	assertValidation(t, resp, false, domain.ReasonLimitExceeded)
+	if resp.Reason != domain.ReasonLimitExceeded {
+		t.Fatalf("expected reason %s, got %s", domain.ReasonLimitExceeded, resp.Reason)
+	}
 }
 
 func TestPolicy_Validate_RateUnavailable(t *testing.T) {
 	p, date := newPolicyWithError(t, domain.ErrRateUnavailable)
-	usd, err := domain.NewMoney(10_00, domain.CurrencyUSD)
-	must(t, err)
+
+	usd, err := domain.NewMoney(10_00, usdCurrency.Code)
+	if err != nil {
+		t.Fatalf("failed to create money: %v", err)
+	}
 
 	resp, err := p.Validate(ValidateRequest{
 		Provider: testProvider,
 		Amount:   usd,
 		Date:     date,
 	})
+	if err != nil {
+		t.Fatalf("Validate returned error: %v", err)
+	}
 
-	assertValidation(t, resp, false, domain.ReasonRateUnavailable)
+	if resp.Reason != domain.ReasonRateUnavailable {
+		t.Fatalf("expected reason %s, got %s", domain.ReasonRateUnavailable, resp.Reason)
+	}
 }
