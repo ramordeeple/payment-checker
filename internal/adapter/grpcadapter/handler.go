@@ -1,7 +1,6 @@
 package grpcadapter
 
 import (
-	"context"
 	paymentcheckerv1 "payment-checker/internal/grpc/proto/paymentchecker/v1"
 	"time"
 
@@ -25,7 +24,6 @@ func NewHandler(provider port.FXRateProvider, policy *usecase.Policy) *Handler {
 }
 
 func (h *Handler) Validate(
-	ctx context.Context,
 	req *paymentcheckerv1.ValidatePaymentRequest,
 ) (*paymentcheckerv1.ValidatePaymentResponse, error) {
 
