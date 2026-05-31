@@ -1,6 +1,6 @@
 package httpapi
 
-// От фронтенда
+// From frontend
 type ValidatePaymentRequest struct {
 	Provider string `json:"provider"`
 	Amount   int64  `json:"amount"`
@@ -8,7 +8,7 @@ type ValidatePaymentRequest struct {
 	Date     string `json:"date"`
 }
 
-// На фронтенд
+// To frontend
 type ValidatePaymentResponse struct {
 	Allowed  bool   `json:"allowed"`
 	TotalRUB int64  `json:"totalRUBInKopecks"`
