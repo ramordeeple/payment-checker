@@ -9,34 +9,6 @@
 
 ---
 
-## ⚙️ Стек технологий
-
-| Компонент       | Технологии           |
-|-----------------|----------------------|
-| Backend         | Go, net/http, gRPC   |
-| Database        | PostgreSQL           |
-| API Docs        | Swagger              |
-| Dev Environment | Docker Compose       |
-| Testing         | Go tests, .http file |
-| Build           | Go modules, Makefile |
-
----
-
-## 🧱 Структура проекта
-
-```
-cmd/payment-checker — точка входа (main.go)
-internal/
-  adapter/          — HTTP/gRPC handlers
-  domain/           — DDD ядро
-  usecase/          — бизнес-логика, Policy, Converter, тесты
-  repository/       — работа с базой 
-  port/             — интерфейсы 
-docs/               — сгенерированная Swagger документация
-```
-
----
-
 ## 🚀 Быстрый старт
 
 ### 1️⃣ Предварительные требования
@@ -48,33 +20,6 @@ docs/               — сгенерированная Swagger документ�
 
 ### 2️⃣ Поднять базу данных и сервис в Docker
 
-Пример `docker-compose.yml`:
-
-```yaml
-services:
-  db:
-    image: postgres:latest
-    environment:
-      POSTGRES_DB: ${POSTGRES_DB}
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-    ports:
-      - "5433:5432"
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
-      interval: 2s
-      retries: 10
-
-  app:
-    build: .
-    ports:
-      - "8080:8080"
-    env_file:
-      - .env
-    depends_on:
-      db:
-        condition: service_healthy
-```
 
 В корне проекта:
 
@@ -82,50 +27,9 @@ services:
 docker compose up -d
 ```
 
-Будут применены указанные ниже параметры значений:
-
-| Параметр | Значение   |
-|----------|------------|
-| Host     | localhost  |
-| Port     | 5433       |
-| Database | payment_db |
-| Username | postgres   |
-| Password | 123        |
-
-Либо же правой кнопкой мыши по `docker-compose.yml` и `Run 'payment_db'`, если в **GoLand**.
-
-> ⚠️ Порт 5433 выбран, чтобы не конфликтовать с локальным 5432.
-
-
 ---
 
-### 3️⃣ Настройка переменных окружения
-
-Указаны в `.env`:
-
-```
-DATABASE_URL=postgres://postgres:123@db:5432/payment_db?sslmode=disable
-POSTGRES_USER=postgres
-POSTGRES_PASSWORD=123
-POSTGRES_DB=payment_db
-```
-
----
-
-### 4️⃣ Запуск приложения
-
-Через Makefile:
-
-```bash
-make run
-```
-
-или напрямую:
-
-```bash
-cd cmd/paymentchecker
-go run main.go
-```
+### Запуск приложения
 
 После запуска:
 
