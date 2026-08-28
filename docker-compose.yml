@@ -16,8 +16,11 @@ services:
     build: .
     ports:
       - "${REST_API_PORT}:8080"
-    env_file:
-      - .env.local
+      - "${GRPC_API_PORT}:8090"
+    environment:
+      DATABASE_URL: >-
+        postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_DB}:${POSTGRES_PORT}/${POSTGRES_DB}?sslmode=disable
+
     depends_on:
       db:
         condition: service_healthy
