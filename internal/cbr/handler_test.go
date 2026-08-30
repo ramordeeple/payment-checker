@@ -8,7 +8,7 @@ import (
 	"testing"
 )
 
-var response struct {
+type cbrResponse struct {
 	Date string `xml:"Date,attr"`
 	Name string `xml:"name,attr"`
 
@@ -21,6 +21,8 @@ var response struct {
 		Value    string `xml:"Value"`
 	} `xml:"Valute"`
 }
+
+var response cbrResponse
 
 func TestHandler_KnownDateReturnsFixture(t *testing.T) {
 	t.Parallel()
