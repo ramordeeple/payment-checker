@@ -8,6 +8,20 @@ import (
 	"testing"
 )
 
+var response struct {
+	Date string `xml:"Date,attr"`
+	Name string `xml:"name,attr"`
+
+	Valutes []struct {
+		ID       string `xml:"ID,attr"`
+		NumCode  string `xml:"NumCode"`
+		CharCode string `xml:"CharCode"`
+		Nominal  int    `xml:"Nominal"`
+		Name     string `xml:"Name"`
+		Value    string `xml:"Value"`
+	} `xml:"Valute"`
+}
+
 func TestHandler_KnownDateReturnsFixture(t *testing.T) {
 	t.Parallel()
 
@@ -62,20 +76,6 @@ func TestHandler_ReturnsValidCBRXML(t *testing.T) {
 			http.StatusOK,
 			rec.Body.String(),
 		)
-	}
-
-	var response struct {
-		Date string `xml:"Date,attr"`
-		Name string `xml:"name,attr"`
-
-		Valutes []struct {
-			ID       string `xml:"ID,attr"`
-			NumCode  string `xml:"NumCode"`
-			CharCode string `xml:"CharCode"`
-			Nominal  int    `xml:"Nominal"`
-			Name     string `xml:"Name"`
-			Value    string `xml:"Value"`
-		} `xml:"Valute"`
 	}
 
 	if err := xml.Unmarshal(rec.Body.Bytes(), &response); err != nil {
