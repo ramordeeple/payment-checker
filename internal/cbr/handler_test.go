@@ -22,8 +22,6 @@ type cbrResponse struct {
 	} `xml:"Valute"`
 }
 
-var response cbrResponse
-
 func TestHandler_KnownDateReturnsFixture(t *testing.T) {
 	t.Parallel()
 
@@ -79,6 +77,8 @@ func TestHandler_ReturnsValidCBRXML(t *testing.T) {
 			rec.Body.String(),
 		)
 	}
+
+	var response cbrResponse
 
 	if err := xml.Unmarshal(rec.Body.Bytes(), &response); err != nil {
 		t.Fatalf("response is not valid XML: %v", err)
