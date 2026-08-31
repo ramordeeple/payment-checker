@@ -1,0 +1,51 @@
+version: '3'
+
+vars:
+  ENV_FILE: .env.local
+
+tasks:
+  default:
+    desc: Show available tasks
+    cmds:
+      - task --list
+
+  run:
+    desc: Run CBR mock locally
+    cmds:
+      - go run ./cmd/payment-checker
+
+  build:
+    desc: Build application
+    cmds:
+      - go build ./cmd/payment-checker
+
+  test:
+    desc: Run tests
+    cmds:
+      - go test ./... -count=1
+
+  vet:
+    desc: Run static analysis
+    cmds:
+      - go vet ./...
+
+  check:
+    desc: Run all checks
+    cmds:
+      - task: test
+      - task: vet
+
+  docker-config:
+    desc: Validate resolved Docker Compose configuration
+    cmds:
+      - docker compose --env-file {{.ENV_FILE}} config
+
+  docker-up:
+    desc: Build and start local environment
+    cmds:
+      - docker compose --env-file {{.ENV_FILE}} up --build
+
+  docker-down:
+    desc: Stop local environment
+    cmds:
+      - docker compose --env-file {{.ENV_FILE}} down
