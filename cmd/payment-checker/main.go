@@ -1,38 +1,38 @@
 package main
 
 import (
+	"context"
 	"log"
-	"net/http"
 	"os"
+	"os/signal"
+	"syscall"
 	"time"
 
-	"payment-checker/internal/cbr"
+	"payment-checker/internal/app"
 )
 
 func main() {
-	port := os.Getenv("REST_API_PORT")
-	if port == "" {
-		port = "8080"
-	}
-
-	mux := http.NewServeMux()
-	mux.Handle(
-		"GET /scripts/XML_daily.asp",
-		cbr.NewHandler(),
+	ctx, stop := signal.NotifyContext(
+		context.Background(),
+		os.Interrupt,
+		syscall.SIGTERM,
 	)
+	defer stop()
 
-	server := &http.Server{
-		Addr:              ":" + port,
-		Handler:           mux,
-		ReadHeaderTimeout: 5 * time.Second,
-		ReadTimeout:       10 * time.Second,
-		WriteTimeout:      10 * time.Second,
-		IdleTimeout:       time.Minute,
+	cfg := app.Config{
+		HTTPAddr:        ":" + envOrDefault("REST_API_PORT", "8080"),
+		ShutdownTimeout: 5 * time.Second,
 	}
 
-	log.Printf("CBR mock is listening on %s", server.Addr)
-
-	if err := server.ListenAndServe(); err != nil {
-		log.Fatalf("HTTP server failed: %v", err)
+	if err := app.Run(ctx, cfg); err != nil {
+		log.Fatalf("application failed: %v", err)
 	}
+}
+
+func envOrDefault(name, fallback string) string {
+	if value := os.Getenv(name); value != "" {
+		return value
+	}
+
+	return fallback
 }
