@@ -1,26 +1,5 @@
 services:
-  db:
-    image: postgres:latest
-    environment:
-      POSTGRES_DB: ${POSTGRES_DB}
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-    ports:
-      - "${POSTGRES_PORT}:5432"
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
-      interval: 2s
-      retries: 10
-
   app:
     build: .
     ports:
       - "${REST_API_PORT}:8080"
-      - "${GRPC_API_PORT}:8090"
-    environment:
-      DATABASE_URL: >-
-        postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_DB}:${POSTGRES_PORT}/${POSTGRES_DB}?sslmode=disable
-
-    depends_on:
-      db:
-        condition: service_healthy
