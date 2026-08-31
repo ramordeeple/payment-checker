@@ -1,0 +1,8 @@
+.git
+.idea
+.env
+.env.local
+requests
+readme.md
+Taskfile.yml
+docker-compose.yml
