@@ -1,0 +1,20 @@
+@baseUrl = http://localhost:8080
+
+### Корректный ответ
+GET {{baseUrl}}/scripts/XML_daily.asp?date_req=02/03/2002
+Accept: application/xml
+
+### Отсутствует дата
+GET {{baseUrl}}/scripts/XML_daily.asp
+Accept: application/xml
+
+### Некорректная дата
+GET {{baseUrl}}/scripts/XML_daily.asp?date_req=2002-03-02
+Accept: application/xml
+
+### Fixture отсутствует
+GET {{baseUrl}}/scripts/XML_daily.asp?date_req=01/01/2030
+Accept: application/xml
+
+### Неподдерживаемый метод
+POST {{baseUrl}}/scripts/XML_daily.asp?date_req=02/03/2002
