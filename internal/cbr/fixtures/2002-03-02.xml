@@ -7,4 +7,11 @@
         <Name>Доллар США</Name>
         <Value>75,0000</Value>
     </Valute>
+    <Valute ID="R01820">
+        <NumCode>392</NumCode>
+        <CharCode>JPY</CharCode>
+        <Nominal>100</Nominal>
+        <Name>Японских иен</Name>
+        <Value>50,0000</Value>
+    </Valute>
 </ValCurs>
