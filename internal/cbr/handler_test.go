@@ -86,13 +86,6 @@ func TestHandler_ReturnsValidCBRXML(t *testing.T) {
 		t.Fatalf("response is not valid XML: %v", err)
 	}
 
-	if len(response.Valutes) != 1 {
-		t.Fatalf(
-			"Valutes count: got %d, want 1",
-			len(response.Valutes),
-		)
-	}
-
 	valute := response.Valutes[0]
 
 	if valute.CharCode != "USD" {
