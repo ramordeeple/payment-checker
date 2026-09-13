@@ -20,17 +20,19 @@ func Run(ctx context.Context, cfg Config) error {
 	server := newHTTPServer(cfg.HTTPAddr)
 	serverErr := startHTTPServer(server)
 
+	result := shutdownHTTPServer(
+		server,
+		serverErr,
+		cfg.ShutdownTimeout,
+	)
+
 	select {
 	case err := <-serverErr:
 		return checkHTTPServerError(err)
 
 	case <-ctx.Done():
 		log.Printf("shutdown signal received")
-		return shutdownHTTPServer(
-			server,
-			serverErr,
-			cfg.ShutdownTimeout,
-		)
+		return result
 	}
 }
 
